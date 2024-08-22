@@ -1,0 +1,143 @@
+dns:
+  enable: true
+  prefer-h3: true
+#  ipv6: true
+#  listen: 0.0.0.0:1053
+#  fake-ip-range: 198.18.0.1/16
+#  enhanced-mode: fake-ip
+#  fake-ip-filter: ['+.*']
+  nameserver:
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+  proxy-server-nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    'rule-set:ads': rcode://success
+    'rule-set:ptsite,cn,private,bilibili,acfun': [https://doh.pub/dns-query, https://dns.alidns.com/dns-query]
+proxy-groups:
+- name: 🚀 节点选择
+  type: select
+  proxies:
+  - 🇭🇰 香港节点
+  - 🇹🇼 台湾节点
+  - 🇯🇵 日本节点
+  - 🇰🇷 韩国节点
+  - 🇸🇬 新加坡节点
+  - 🇺🇸 美国节点
+- name: 🇭🇰 香港节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)港|hk|hongkong|hong kong
+- name: 🇹🇼 台湾节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)台|tw|taiwan
+- name: 🇯🇵 日本节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)日本|jp|japan
+- name: 🇰🇷 韩国节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)韩国|SouthKorea
+- name: 🇸🇬 新加坡节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)新|sg|singapore
+- name: 🇺🇸 美国节点
+  type: url-test
+  tolerance: 100
+  lazy: true
+  include-all-providers: true
+  filter: (?i)美|us|unitedstates|united states
+proxy-providers:
+  🛫 FLY2:
+    type: http
+    exclude-filter: "定时|官网|以下|禁止|剩余|到期|移动"
+    # 机场订阅链接，使用 Clash 链接
+    url: 
+    path: ./proxies/airport.yaml
+    interval: 86400
+    health-check:
+      enable: true
+      interval: 600
+      # 未选择到当前策略组时，不会进行测试
+      # lazy: true
+      url: 'https://www.gstatic.com/generate_204'
+rules:
+- RULE-SET,ads,REJECT
+- RULE-SET,private,DIRECT
+- RULE-SET,ptsite,DIRECT
+- RULE-SET,bilibili,DIRECT
+- RULE-SET,acfun,DIRECT
+- RULE-SET,cn,DIRECT
+- RULE-SET,cnip,DIRECT
+- RULE-SET,proxy,🚀 节点选择
+- MATCH,🚀 节点选择
+rule-providers:
+  ads:
+    type: http
+    behavior: domain
+    format: text
+    path: ./rules/ads.list
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/clash-ruleset/ads.list"
+    interval: 86400
+  private:
+    type: http
+    behavior: domain
+    format: text
+    path: ./rules/private.list
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/clash-ruleset/private.list"
+    interval: 86400
+  ptsite:
+    type: http
+    behavior: classical
+    url: https://gist.githubusercontent.com/Hiccup90/4b82cf42bf112aeec90ff2e3671cbdd8/raw/ptsite.yaml
+    path: ./ruleset/ptsite.yaml
+    interval: 86400
+  proxy:
+    type: http
+    behavior: domain
+    format: text
+    path: ./rules/proxy.list
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/clash-ruleset/proxy.list"
+    interval: 86400
+  cn:
+    type: http
+    behavior: domain
+    format: text
+    path: ./rules/cn.list
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/clash-ruleset/cn.list"
+    interval: 86400
+  cnip:
+    type: http
+    behavior: ipcidr
+    format: text
+    path: ./rules/cnip.list
+    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/clash-ruleset/cnip.list"
+    interval: 86400
+  bilibili:
+    type: http
+    behavior: classical
+    format: yaml
+    path: ./rules/bilibili.yaml
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/BiliBili/BiliBili.yaml"
+    interval: 86400
+  acfun:
+    type: http
+    behavior: classical
+    format: yaml
+    path: ./rules/acfun.yaml
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AcFun/AcFun.yaml"
+    interval: 86400
